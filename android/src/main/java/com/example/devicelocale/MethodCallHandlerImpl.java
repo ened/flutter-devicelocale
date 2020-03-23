@@ -9,13 +9,14 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 
 public class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
 
   private static final String TAG = "MethodCallHandlerImpl";
-  
+
   @Nullable
   private MethodChannel methodChannel;
 
@@ -61,6 +62,9 @@ public class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
       case "currentLocale":
         result.success(getCurrentLocale());
         break;
+      case "currentCurrency":
+        result.success(getCurrentCurrency());
+        break;
       default:
         result.notImplemented();
     }
@@ -68,6 +72,12 @@ public class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
 
   private String getCurrentLocale() {
     return Locale.getDefault().toString();
+  }
+
+  private String getCurrentCurrency() {
+    Currency currency = Currency.getInstance(Locale.getDefault());
+    
+    return currency.getCurrencyCode();
   }
 
   private List<String> getPreferredLanguages() {

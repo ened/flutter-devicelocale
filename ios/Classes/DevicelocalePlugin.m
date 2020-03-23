@@ -10,21 +10,41 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-
   if ([@"preferredLanguages" isEqualToString:call.method]) {
     result([NSLocale preferredLanguages]);
-  } else if([@"currentLocale" isEqualToString:call.method]){
-    NSString *locale = [[NSLocale currentLocale] objectForKey: NSLocaleCountryCode];
-    NSString *language = [[NSLocale currentLocale] objectForKey: NSLocaleLanguageCode];
-    if(locale == nil) {
-      NSString *formattedStr = [NSString stringWithFormat:@"%@",language];
-      result(formattedStr);
-    } else {
-    NSString *formattedStr = [NSString stringWithFormat:@"%@-%@",language, locale];
-    result(formattedStr);
-    };
+  } else if([@"currentLocale" isEqualToString:call.method]) {
+    NSString *locale = [self determineCurrentLocale];
+    result(locale);
+  } else if([@"currentCurrency" isEqualToString:call.method]) {
+    NSString *currency = [self determineCurrentCurrency];
+    result(currency);
   } else {
     result(FlutterMethodNotImplemented);
   }
 }
+
+- (NSString*)determineCurrentLocale {
+  NSString *language = [[NSLocale currentLocale] objectForKey: NSLocaleLanguageCode];
+  NSString *countryCode = [[NSLocale currentLocale] objectForKey: NSLocaleCountryCode];
+
+  if (countryCode == nil) {
+    return [NSString stringWithFormat:@"%@", language];
+  } else {
+    return [NSString stringWithFormat:@"%@-%@", language, countryCode];
+  };
+}
+
+- (NSString*)determineCurrentCurrency {
+  if (@available(iOS 10.0, *)) {
+    return [[NSLocale currentLocale] currencyCode];
+  } else {
+    // https://stackoverflow.com/a/5039433/375209
+    NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+    [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+    [formatter setLocale:[NSLocale currentLocale]];
+    
+    return formatter.currencyCode;
+  }
+}
+
 @end
